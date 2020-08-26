@@ -1,0 +1,67 @@
+---
+- hosts: switches
+  gather_facts: False
+  vars:
+    certset: radius
+    cert_server: 10.155.2.91
+    cert_server_user_name: demo
+    cert_server_password: password
+    ca_cert_dir: "./ca2"
+    ca_cert_pem: ca.pem
+    switch_cert_dir: "./certs"
+
+  tasks:
+
+  - name: push ca certificate
+    brocade_fos_command:
+      switch_login: "{{ fos_user_name }}"
+      switch_password: "{{ fos_password }}"
+      switch_address: "{{ fos_ip_addr }}"
+      command_set:
+        - command: seccertmgmt import -ca -client "{{ certset }}"
+          prompts:
+            - question: Select protocol
+              response: scp
+            - question: Enter IP address
+              response: "{{ cert_server }}"
+            - question: Enter remote directory
+              response: "{{ ca_cert_dir }}"
+            - question: Enter certificate name
+              response: "{{ ca_cert_pem }}"
+            - question: Enter Login Name
+              response: "{{ cert_server_user_name }}"
+            - question: "password:"
+              response: "{{ cert_server_password }}"
+
+    register: configout
+
+  - name: print ansible_facts gathered
+    debug:
+      var: configout
+
+  - name: push switch certificate
+    brocade_fos_command:
+      switch_login: "{{ fos_user_name }}"
+      switch_password: "{{ fos_password }}"
+      switch_address: "{{ fos_ip_addr }}"
+      command_set:
+        - command: seccertmgmt import -cert "{{ certset }}"
+          prompts:
+            - question: Select protocol
+              response: scp
+            - question: Enter IP address
+              response: "{{ cert_server }}"
+            - question: Enter remote directory
+              response: "{{ switch_cert_dir }}"
+            - question: Enter certificate name
+              response: "{{ fos_ip_addr + '.pem' }}"
+            - question: Enter Login Name
+              response: "{{ cert_server_user_name }}"
+            - question: "password:"
+              response: "{{ cert_server_password }}"
+
+    register: configout
+
+  - name: print ansible_facts gathered
+    debug:
+      var: configout

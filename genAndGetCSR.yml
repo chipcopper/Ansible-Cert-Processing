@@ -1,0 +1,62 @@
+---
+- hosts: switches
+  gather_facts: False
+  vars:
+    certset: radius
+    cert_server: 10.155.2.91
+    cert_server_user_name: demo
+    cert_server_password: password
+    switch_cert_dir: "./certReq"
+    country_name: US
+    state_or_province: OH
+    locality_name: ColSta
+    org_name: Solutions
+    org_unit_name: SectorG
+    include_ip_san: "yes"
+
+  tasks:
+
+  - name: run fos commands
+    brocade_fos_command:
+      switch_login: "{{ fos_user_name }}"
+      switch_password: "{{ fos_password }}"
+      switch_address: "{{ fos_ip_addr }}"
+      command_set:
+        - command: seccertmgmt generate -csr "{{ certset }}"
+          prompts:
+            - question: "Continue (yes, y, no, n)"
+              response: "yes"
+            - question: "Country Name"
+              response: "{{ country_name }}"
+            - question: "State or Province Name"
+              response: "{{ state_or_province }}"
+            - question: "Locality Name"
+              response: "{{ locality_name }}"
+            - question: "Organization Name"
+              response: "{{ org_name }}"
+            - question: "Organizational Unit Name"
+              response: "{{ org_unit_name }}"
+            - question: "Common Name"
+              response: "{{ inventory_hostname }}"
+            - question: "Do you want to continue including IP in the SAN?"
+              response: "{{ include_ip_san }}"
+        - command: seccertmgmt export -csr "{{ certset }}"
+          prompts:
+            - question: Select protocol
+              response: scp
+            - question: Enter IP address
+              response: "{{ cert_server }}"
+            - question: Enter remote directory
+              response: "{{ switch_cert_dir }}"
+            - question: Enter Login Name
+              response: "{{ cert_server_user_name }}"
+            - question: "password:"
+              response: "{{ cert_server_password }}"
+
+    register: configout
+
+  - name: print ansible_facts gathered
+    debug:
+      var: configout
+
+
