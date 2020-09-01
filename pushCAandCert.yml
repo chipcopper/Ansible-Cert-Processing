@@ -3,12 +3,12 @@
   gather_facts: False
   vars:
     certset: radius
-    cert_server: 10.155.2.91
-    cert_server_user_name: demo
+    cert_server: 1.2.3.4
+    cert_server_user_name: admin
     cert_server_password: password
-    ca_cert_dir: "./ca2"
+    ca_cert_dir: "/directory/for/certs"
     ca_cert_pem: ca.pem
-    switch_cert_dir: "./certs"
+    switch_cert_dir: "/directory/for/certs"
 
   tasks:
 
@@ -19,6 +19,13 @@
       switch_address: "{{ fos_ip_addr }}"
       command_set:
         - command: seccertmgmt import -ca -client "{{ certset }}"
+          start_state:
+            - flag: changed
+              value: True
+          result_tests:
+            - test: "Error"
+              flag: changed
+              value: False
           prompts:
             - question: Select protocol
               response: scp
@@ -46,6 +53,13 @@
       switch_address: "{{ fos_ip_addr }}"
       command_set:
         - command: seccertmgmt import -cert "{{ certset }}"
+          start_state:
+            - flag: changed
+              value: True
+          result_tests:
+            - test: "Error"
+              flag: changed
+              value: False
           prompts:
             - question: Select protocol
               response: scp
