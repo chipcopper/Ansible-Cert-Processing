@@ -18,7 +18,7 @@
       switch_password: "{{ fos_password }}"
       switch_address: "{{ fos_ip_addr }}"
       command_set:
-        - command: seccertmgmt import -ca -client "{{ certset }}"
+        - command: seccertmgmt import -ca -server "{{ certset }}"
           start_state:
             - flag: changed
               value: True
